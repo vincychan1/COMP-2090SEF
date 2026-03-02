@@ -1,6 +1,6 @@
 from goods import Goods, DiscountedGoods
 from cart import Cart
-from cashdesk import CashDesk
+from cashier import Cashier
 
 
 def setup_test_data():
@@ -51,7 +51,7 @@ def main():
     # Initialize
     goods_dict = setup_test_data()
     cart = Cart()
-    cashdesk = CashDesk("01")
+    cashier = Cashier("01")
     
     print("Welcome to OOP Supermarket Checkout System!")
     
@@ -106,17 +106,17 @@ def main():
                 print("Cart is empty, cannot checkout")
                 continue
             
-            cashdesk.start_checkout(cart)
+            cashier.start_checkout(cart)
             
             try:
                 tax_rate = float(input("Enter tax rate (e.g., 0.13 for 13%, Enter for 0): ").strip() or "0")
                 amount = float(input("Enter payment amount: ").strip())
-                cashdesk.process_payment(amount, tax_rate)
+                cashier.process_payment(amount, tax_rate)
             except ValueError:
                 print("Invalid input format!")
         
         elif choice == "7":
-            cashdesk.get_sales_report()
+            cashier.get_sales_report()
         
         elif choice == "8":
             confirm = input("Clear cart? (y/n): ").strip().lower()
