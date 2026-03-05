@@ -26,7 +26,7 @@ class CartItem:
     
     def __str__(self):
         """Return string representation of cart item"""
-        return f"{self.goods.name}\t${self.goods.price:.2f}/{self.goods.unit}\t{self.quantity}{self.goods.unit}\t${self.get_subtotal():.2f}"
+        return f"{self.goods.name}\t${self.goods.price:.2f}\t{self.quantity}\t${self.get_subtotal():.2f}"
     
     def to_dict(self) -> dict:
         """
@@ -64,11 +64,11 @@ class ShoppingCart:
         if goods.id in self.items:
             # Product already exists, increase quantity
             self.items[goods.id].quantity += quantity
-            print(f"Updated {goods.name} quantity, current total: {self.items[goods.id].quantity}{goods.unit}")
+            print(f"Updated {goods.name} quantity, current total: {self.items[goods.id].quantity}")
         else:
             # Product doesn't exist, add new item
             self.items[goods.id] = CartItem(goods, quantity)
-            print(f"Added {goods.name} {quantity}{goods.unit} to cart")
+            print(f"Added {goods.name} {quantity} to cart")
     
     def remove_item(self, goods_id: str) -> None:
         """
@@ -126,9 +126,12 @@ class ShoppingCart:
         """
         return len(self.items) == 0
     
-    def get_total(self) -> float:
+    def get_total(self, apply_discount: bool = False) -> float:
         """
         Calculate total amount of the cart
+        
+        Args:
+            apply_discount: Whether to apply discount (default: False)
         
         Returns:
             float: Total amount
@@ -136,6 +139,29 @@ class ShoppingCart:
         total = 0.0
         for item in self.items.values():
             total += item.get_subtotal()
+        
+        if apply_discount:
+            total = self.apply_discount(total)
+        
+        return total
+    
+    def apply_discount(self, total: float) -> float:
+        """
+        Apply discount based on total amount
+        Discount rules: >=1000: -300, >=500: -100, >=300: -50
+        
+        Args:
+            total: Original total amount
+            
+        Returns:
+            float: Amount after discount
+        """
+        if total >= 1000:
+            return total - 300
+        elif total >= 500:
+            return total - 100
+        elif total >= 300:
+            return total - 50
         return total
     
     def get_item_count(self) -> int:
@@ -153,15 +179,51 @@ class ShoppingCart:
             print("Shopping cart is empty")
             return
         
-        print("\n" + "="*50)
+        print("\n" + "="*60)
         print("Shopping Cart Contents:")
-        print("-"*50)
-        print("Product Name\tPrice\t\tQuantity\tSubtotal")
+        print("-"*60)
+        print(f"{'Product Name':<20}{'Price':>10}{'Quantity':>10}{'Subtotal':>15}")
         for item in self.get_items():
-            print(f"{item.goods.name}\t${item.goods.price:.2f}/{item.goods.unit}\t{item.quantity}{item.goods.unit}\t${item.get_subtotal():.2f}")
-        print("-"*50)
-        print(f"Total:\t\t\t\t${self.get_total():.2f}")
-        print("="*50)
+            print(f"{item.goods.name:<20}${item.goods.price:>9.2f}{item.quantity:>10}${item.get_subtotal():>14.2f}")
+        print("-"*60)
+        original_total = self.get_total(apply_discount=False)
+        discounted_total = self.apply_discount(original_total)
+        print(f"{'Subtotal:':<50}${original_total:>7.2f}")
+        if original_total != discounted_total:
+            discount_amount = original_total - discounted_total
+            print(f"{'Discount:':<50}$-{discount_amount:>6.2f}")
+        print(f"{'Total:':<50}${discounted_total:>7.2f}")
+        print("="*60)
+    
+    def print_receipt(self) -> None:
+        """
+        Print receipt (similar to Cashier.ticket())
+        """
+        if self.is_empty():
+            print("Cannot print receipt: Shopping cart is empty")
+            return
+        
+        print("\n" + "="*60)
+        print("---RECEIPT---".center(60))
+        print("="*60)
+        print(f"{'Product':<25}{'Qty':>10}{'Price':>12}{'Total':>13}")
+        print("-"*60)
+        
+        for item in self.get_items():
+            print(f"{item.goods.name:<25}{item.quantity:>10}${item.goods.price:>10.2f}${item.get_subtotal():>11.2f}")
+        
+        print("-"*60)
+        original_total = self.get_total(apply_discount=False)
+        discounted_total = self.apply_discount(original_total)
+        
+        print(f"{'Subtotal:':<47}${original_total:>10.2f}")
+        if original_total != discounted_total:
+            discount_amount = original_total - discounted_total
+            print(f"{'Discount:':<47}$-{discount_amount:>9.2f}")
+        print("="*60)
+        print(f"{'TOTAL:':<47}${discounted_total:>10.2f}")
+        print("="*60)
+        print("Thank you for your purchase!\n")
     
     def to_dict(self) -> dict:
         """
@@ -172,7 +234,8 @@ class ShoppingCart:
         """
         return {
             "items": [item.to_dict() for item in self.items.values()],
-            "total": self.get_total(),
+            "total": self.get_total(apply_discount=True),
+            "original_total": self.get_total(apply_discount=False),
             "item_count": self.get_item_count()
         }
     
