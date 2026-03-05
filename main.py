@@ -1,6 +1,5 @@
 from goods import Goods
 from cart import ShoppingCart
-from cashier import Cashier, MemberDiscount, FullReductionDiscount
 import json
 import os
 from typing import Dict, List
@@ -13,7 +12,6 @@ class SupermarketSystem:
         """Initialize system"""
         self.inventory: Dict[str, Goods] = {}  # Product inventory, product ID to Goods object mapping
         self.cart = ShoppingCart()
-        self.cashier = Cashier(cashier_id="001", counter_no="01")
         self.data_dir = "data"
         self.goods_file = os.path.join(self.data_dir, "goods.json")
         
@@ -37,7 +35,12 @@ class SupermarketSystem:
             
             self.inventory.clear()
             for goods_data in goods_list:
-                goods = Goods.from_dict(goods_data)
+                # Create Goods object from dictionary
+                goods = Goods(
+                    goods_data['id'],
+                    goods_data['name'],
+                    goods_data['price']
+                )
                 self.inventory[goods.id] = goods
             
             print(f"Successfully loaded {len(self.inventory)} products")
@@ -48,15 +51,14 @@ class SupermarketSystem:
     def create_default_goods(self) -> None:
         """Create default product data"""
         default_goods = [
-            {"id": "001", "name": "Apple", "price": 6.5, "unit": "lb"},
-            {"id": "002", "name": "Milk", "price": 12.0, "unit": "carton"},
-            {"id": "003", "name": "Bread", "price": 8.9, "unit": "loaf"},
-            {"id": "004", "name": "Eggs", "price": 1.5, "unit": "egg"},
-            {"id": "005", "name": "Rice", "price": 5.8, "unit": "lb"}
+            Goods("001", "Apple", 6.5),
+            Goods("002", "Milk", 12.0),
+            Goods("003", "Chocolate", 8.0),
+            Goods("004", "Biscuit", 7.5),
+            Goods("005", "Bread", 10.0)
         ]
         
-        for goods_data in default_goods:
-            goods = Goods.from_dict(goods_data)
+        for goods in default_goods:
             self.inventory[goods.id] = goods
         
         self.save_goods()
@@ -65,7 +67,14 @@ class SupermarketSystem:
     def save_goods(self) -> None:
         """Save product data to JSON file"""
         try:
-            goods_list = [goods.to_dict() for goods in self.inventory.values()]
+            goods_list = [
+                {
+                    "id": goods.id,
+                    "name": goods.name,
+                    "price": goods.price
+                }
+                for goods in self.inventory.values()
+            ]
             with open(self.goods_file, 'w', encoding='utf-8') as f:
                 json.dump(goods_list, f, ensure_ascii=False, indent=4)
             print(f"Product data saved to {self.goods_file}")
@@ -77,9 +86,10 @@ class SupermarketSystem:
         print("\n" + "="*50)
         print("Product List:")
         print("-"*50)
-        print("ID\tName\tPrice")
+        print(f"{'ID':<10}{'Name':<20}{'Price':>10}")
+        print("-"*50)
         for goods in self.inventory.values():
-            print(f"{goods.id}\t{goods.name}\t${goods.price:.2f}/{goods.unit}")
+            print(f"{goods.id:<10}{goods.name:<20}${goods.price:>8.2f}")
         print("="*50)
     
     def add_to_cart(self) -> None:
@@ -137,24 +147,16 @@ class SupermarketSystem:
         if confirm == 'y':
             self.cart.clear()
     
-    def set_discount(self) -> None:
-        """Set discount strategy"""
-        print("\nSelect discount strategy:")
-        print("1. No discount")
-        print("2. Member discount (5% off)")
-        print("3. Full reduction (Spend $100 save $10)")
-        
-        choice = input("Choose (1-3): ").strip()
-        
-        if choice == '1':
-            from cashier import DiscountStrategy
-            self.cashier.set_discount_strategy(DiscountStrategy())
-        elif choice == '2':
-            self.cashier.set_discount_strategy(MemberDiscount(0.95))
-        elif choice == '3':
-            self.cashier.set_discount_strategy(FullReductionDiscount(100, 10))
-        else:
-            print("Invalid choice")
+    def view_discount_info(self) -> None:
+        """Display discount information"""
+        print("\n" + "="*50)
+        print("Discount Rules:")
+        print("-"*50)
+        print("1. Spend $300 or more: Save $50")
+        print("2. Spend $500 or more: Save $100")
+        print("3. Spend $1000 or more: Save $300")
+        print("="*50)
+        print("Discounts are automatically applied at checkout!")
     
     def checkout(self) -> None:
         """Checkout"""
@@ -162,19 +164,17 @@ class SupermarketSystem:
             print("Shopping cart is empty, cannot checkout")
             return
         
-        self.cashier.start_checkout(self.cart)
-        receipt_data = self.cashier.checkout()
+        # Print receipt with discount applied
+        self.cart.print_receipt()
         
-        if receipt_data:
-            # Ask whether to save receipt
-            save_choice = input("\nSave receipt? (1-JSON, 2-Text, 3-No): ").strip()
-            if save_choice == '1':
-                self.cashier.save_receipt_to_json(receipt_data)
-            elif save_choice == '2':
-                self.cashier.save_receipt_to_txt(receipt_data)
-            
+        # Ask for confirmation
+        confirm = input("\nConfirm purchase? (y/n): ").strip().lower()
+        if confirm == 'y':
+            print("Payment successful!")
             # Clear cart after checkout
             self.cart.clear()
+        else:
+            print("Purchase cancelled")
     
     def manage_goods(self) -> None:
         """Manage products"""
@@ -226,12 +226,7 @@ class SupermarketSystem:
             print("Error: Please enter a valid number")
             return
         
-        unit = input("Product unit: ").strip()
-        if not unit:
-            print("Error: Product unit cannot be empty")
-            return
-        
-        goods = Goods(goods_id, name, price, unit)
+        goods = Goods(goods_id, name, price)
         self.inventory[goods_id] = goods
         self.save_goods()
         print(f"Product {name} added successfully")
@@ -261,28 +256,28 @@ class SupermarketSystem:
             return
         
         goods = self.inventory[goods_id]
-        print(f"\nCurrent product info: {goods}")
+        print(f"\nCurrent product info: ID={goods.id}, Name={goods.name}, Price=${goods.price:.2f}")
         print("Enter new information (press Enter to keep current value):")
         
+        # Note: Goods class uses private attributes with property decorators
+        # We need to recreate the object to modify it
         name = input(f"Product name [{goods.name}]: ").strip()
-        if name:
-            goods.name = name
+        if not name:
+            name = goods.name
         
+        price = goods.price
         try:
             price_str = input(f"Product price [{goods.price}]: ").strip()
             if price_str:
                 price = float(price_str)
                 if price <= 0:
                     print("Error: Price must be greater than 0")
-                else:
-                    goods.price = price
+                    price = goods.price
         except ValueError:
             print("Error: Please enter a valid number")
         
-        unit = input(f"Product unit [{goods.unit}]: ").strip()
-        if unit:
-            goods.unit = unit
-        
+        # Create new Goods object with updated values
+        self.inventory[goods_id] = Goods(goods_id, name, price)
         self.save_goods()
         print("Product information updated")
     
@@ -299,7 +294,7 @@ class SupermarketSystem:
             print("3. View cart")
             print("4. Modify cart")
             print("5. Clear cart")
-            print("6. Set discount strategy")
+            print("6. View discount info")
             print("7. Checkout")
             print("8. Product management")
             print("9. Save and exit")
@@ -326,7 +321,7 @@ class SupermarketSystem:
             elif choice == '5':
                 self.clear_cart()
             elif choice == '6':
-                self.set_discount()
+                self.view_discount_info()
             elif choice == '7':
                 self.checkout()
             elif choice == '8':
@@ -338,6 +333,10 @@ class SupermarketSystem:
             else:
                 print("Invalid choice, please try again")
 
+
+if __name__ == "__main__":
+    system = SupermarketSystem()
+    system.run()
 
 if __name__ == "__main__":
     system = SupermarketSystem()
