@@ -23,6 +23,8 @@ class Cashier:
             total_price=total_price-100
         elif total_price>300:
             total_price=total_price-50
+        elif total_price>100:
+            total_price=total_price-20
 
         return total_price
 
