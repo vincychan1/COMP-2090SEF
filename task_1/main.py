@@ -1,343 +1,213 @@
-from goods import Goods
-from cart import ShoppingCart
 import json
-import os
-from typing import Dict, List
+from goods import Goods, get_default_goods
+from cart import ShoppingCart
 
 
 class SupermarketSystem:
-    """Supermarket checkout system main class"""
-    
-    def __init__(self):
-        """Initialize system"""
-        self.inventory: Dict[str, Goods] = {}  # Product inventory, product ID to Goods object mapping
+    def setup(self):
+        self.inventory = {}
         self.cart = ShoppingCart()
-        self.data_dir = "data"
-        self.goods_file = os.path.join(self.data_dir, "goods.json")
-        
-        # Create data directory
-        if not os.path.exists(self.data_dir):
-            os.makedirs(self.data_dir)
-        
-        # Load product data
+        self.admin_password = "admin123"
+        self.goods_file = "goods.json"
         self.load_goods()
-    
-    def load_goods(self) -> None:
-        """Load product data from JSON file"""
-        if not os.path.exists(self.goods_file):
-            print(f"Product file {self.goods_file} does not exist, creating default products")
-            self.create_default_goods()
-            return
-        
+
+    def load_goods(self):
+        self.inventory = {}
         try:
-            with open(self.goods_file, 'r', encoding='utf-8') as f:
-                goods_list = json.load(f)
-            
-            self.inventory.clear()
-            for goods_data in goods_list:
-                # Create Goods object from dictionary
-                goods = Goods(
-                    goods_data['id'],
-                    goods_data['name'],
-                    goods_data['price']
-                )
-                self.inventory[goods.id] = goods
-            
-            print(f"Successfully loaded {len(self.inventory)} products")
-        except Exception as e:
-            print(f"Failed to load product data: {e}")
-            self.create_default_goods()
-    
-    def create_default_goods(self) -> None:
-        """Create default product data"""
-        default_goods = [
-            Goods("001", "Apple", 6.5),
-            Goods("002", "Milk", 12.0),
-            Goods("003", "Chocolate", 8.0),
-            Goods("004", "Biscuit", 7.5),
-            Goods("005", "Bread", 10.0)
-        ]
-        
-        for goods in default_goods:
-            self.inventory[goods.id] = goods
-        
-        self.save_goods()
-        print("Created default product data")
-    
-    def save_goods(self) -> None:
-        """Save product data to JSON file"""
+            with open(self.goods_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            for item in data:
+                gid = item.get("id")
+                name = item.get("name")
+                price = item.get("price")
+                if gid and name and price is not None:
+                    self.inventory[gid] = Goods(gid, name, float(price))
+        except Exception:
+            pass
+
+        if len(self.inventory) == 0:
+            for g in get_default_goods():
+                self.inventory[g.id] = g
+
+    def save_goods(self):
+        with open(self.goods_file, "w", encoding="utf-8") as f:
+            data = [g.to_dict() for g in self.inventory.values()]
+            json.dump(data, f, ensure_ascii=False, indent=2)
+
+    def show_goods(self):
+        print("\n" + "=" * 45)
+        print("ID      Name                Price")
+        print("-" * 45)
+        for g in self.inventory.values():
+            print(f"{g.id:<8}{g.name:<20}${g.price:>8.2f}")
+        print("=" * 45)
+
+    def input_positive(self, prompt):
         try:
-            goods_list = [
-                {
-                    "id": goods.id,
-                    "name": goods.name,
-                    "price": goods.price
-                }
-                for goods in self.inventory.values()
-            ]
-            with open(self.goods_file, 'w', encoding='utf-8') as f:
-                json.dump(goods_list, f, ensure_ascii=False, indent=4)
-            print(f"Product data saved to {self.goods_file}")
-        except Exception as e:
-            print(f"Failed to save product data: {e}")
-    
-    def display_goods(self) -> None:
-        """Display all products"""
-        print("\n" + "="*50)
-        print("Product List:")
-        print("-"*50)
-        print(f"{'ID':<10}{'Name':<20}{'Price':>10}")
-        print("-"*50)
-        for goods in self.inventory.values():
-            print(f"{goods.id:<10}{goods.name:<20}${goods.price:>8.2f}")
-        print("="*50)
-    
-    def add_to_cart(self) -> None:
-        """Add product to cart"""
-        self.display_goods()
-        
-        goods_id = input("Enter product ID: ").strip()
-        if goods_id not in self.inventory:
-            print(f"Error: Product ID {goods_id} does not exist")
-            return
-        
-        try:
-            quantity = float(input("Enter quantity: ").strip())
-            if quantity <= 0:
-                print("Error: Quantity must be greater than 0")
-                return
-            
-            goods = self.inventory[goods_id]
-            self.cart.add_item(goods, quantity)
+            n = float(input(prompt).strip())
+            if n <= 0:
+                return None
+            return n
         except ValueError:
-            print("Error: Please enter a valid number")
-    
-    def view_cart(self) -> None:
-        """View shopping cart"""
-        self.cart.display_cart()
-    
-    def remove_from_cart(self) -> None:
-        """Remove product from cart"""
-        if self.cart.is_empty():
-            print("Shopping cart is empty")
+            return None
+
+    def input_positive_int(self, prompt):
+        text = input(prompt).strip()
+        if not text.isdigit():
+            return None
+        n = int(text)
+        if n <= 0:
+            return None
+        return n
+
+    def show_main_menu(self):
+        print("\n" + "=" * 45)
+        print("         Supermarket Main Menu")
+        print("=" * 45)
+        print(" 1. Browse Products    2. View Cart")
+        print(" 3. Edit Cart          4. Clear Cart")
+        print(" 5. View Discounts     6. Checkout")
+        print(" 7. Product Admin      8. Save and Exit")
+        print("=" * 45)
+
+    def show_manage_menu(self):
+        print("\n" + "=" * 45)
+        print("            Product Admin Menu")
+        print("=" * 45)
+        print(" 1. Manage Product")
+        print(" 2. Back to Main Menu")
+        print("=" * 45)
+
+    def manage_single_product(self):
+        self.show_goods()
+        gid = input("Product ID: ").strip()
+        if not gid:
+            print("Invalid ID.")
             return
-        
-        self.view_cart()
-        goods_id = input("Enter product ID to remove: ").strip()
-        self.cart.remove_item(goods_id)
-    
-    def update_cart_item(self) -> None:
-        """Update cart item quantity"""
-        if self.cart.is_empty():
-            print("Shopping cart is empty")
-            return
-        
-        self.view_cart()
-        goods_id = input("Enter product ID to update: ").strip()
-        
-        try:
-            quantity = float(input("Enter new quantity: ").strip())
-            self.cart.update_quantity(goods_id, quantity)
-        except ValueError:
-            print("Error: Please enter a valid number")
-    
-    def clear_cart(self) -> None:
-        """Clear shopping cart"""
-        confirm = input("Are you sure you want to clear the cart? (y/n): ").strip().lower()
-        if confirm == 'y':
-            self.cart.clear()
-    
-    def view_discount_info(self) -> None:
-        """Display discount information"""
-        print("\n" + "="*50)
-        print("Discount Rules:")
-        print("-"*50)
-        print("1. Spend $300 or more: Save $50")
-        print("2. Spend $500 or more: Save $100")
-        print("3. Spend $1000 or more: Save $300")
-        print("="*50)
-        print("Discounts are automatically applied at checkout!")
-    
-    def checkout(self) -> None:
-        """Checkout"""
-        if self.cart.is_empty():
-            print("Shopping cart is empty, cannot checkout")
-            return
-        
-        # Print receipt with discount applied
-        self.cart.print_receipt()
-        
-        # Ask for confirmation
-        confirm = input("\nConfirm purchase? (y/n): ").strip().lower()
-        if confirm == 'y':
-            print("Payment successful!")
-            # Clear cart after checkout
-            self.cart.clear()
+
+        if gid in self.inventory:
+            old = self.inventory[gid]
+            print(f"Found: {old.id} | {old.name} | ${old.price:.2f}")
+            action = input("Choose action: [E]dit / [D]elete / [C]ancel: ").strip().lower()
+
+            if action == "d":
+                del self.inventory[gid]
+                self.save_goods()
+                print("Product deleted.")
+            elif action == "e":
+                name = input(f"Name [{old.name}]: ").strip() or old.name
+                ptxt = input(f"Price [{old.price}]: ").strip()
+                price = old.price
+                if ptxt:
+                    try:
+                        p = float(ptxt)
+                        if p > 0:
+                            price = p
+                    except ValueError:
+                        print("Invalid price, keeping old price.")
+                self.inventory[gid] = Goods(gid, name, price)
+                self.save_goods()
+                print("Product updated.")
+            else:
+                print("Cancelled.")
         else:
-            print("Purchase cancelled")
-    
-    def manage_goods(self) -> None:
-        """Manage products"""
+            print("Product not found.")
+            if input("Add as new product? (y/n): ").strip().lower() != "y":
+                return
+            name = input("Name: ").strip()
+            price = self.input_positive("Price: ")
+            if not name or price is None:
+                print("Invalid input.")
+                return
+            self.inventory[gid] = Goods(gid, name, price)
+            self.save_goods()
+            print("Product added.")
+
+    def show_cart_edit_menu(self):
+        print("\n" + "=" * 45)
+        print("              Edit Cart Menu")
+        print("=" * 45)
+        print(" 1. Remove Product")
+        print(" 2. Change Quantity")
+        print("=" * 45)
+
+    def manage_goods(self):
         while True:
-            print("\n" + "="*50)
-            print("Product Management")
-            print("="*50)
-            print("1. View all products")
-            print("2. Add new product")
-            print("3. Delete product")
-            print("4. Modify product")
-            print("5. Return to main menu")
-            
-            choice = input("Choose (1-5): ").strip()
-            
-            if choice == '1':
-                self.display_goods()
-            elif choice == '2':
-                self.add_new_goods()
-            elif choice == '3':
-                self.delete_goods()
-            elif choice == '4':
-                self.modify_goods()
-            elif choice == '5':
+            if input("Admin password: ").strip() == self.admin_password:
+                break
+            print("Wrong password, please try again.")
+
+        while True:
+            self.show_manage_menu()
+            c = input("Choose (1-2): ").strip()
+            if c == "1":
+                self.manage_single_product()
+            elif c == "2":
                 break
             else:
-                print("Invalid choice")
-    
-    def add_new_goods(self) -> None:
-        """Add new product"""
-        print("\nAdd new product:")
-        
-        goods_id = input("Product ID: ").strip()
-        if goods_id in self.inventory:
-            print(f"Error: Product ID {goods_id} already exists")
-            return
-        
-        name = input("Product name: ").strip()
-        if not name:
-            print("Error: Product name cannot be empty")
-            return
-        
-        try:
-            price = float(input("Product price: ").strip())
-            if price <= 0:
-                print("Error: Price must be greater than 0")
-                return
-        except ValueError:
-            print("Error: Please enter a valid number")
-            return
-        
-        goods = Goods(goods_id, name, price)
-        self.inventory[goods_id] = goods
-        self.save_goods()
-        print(f"Product {name} added successfully")
-    
-    def delete_goods(self) -> None:
-        """Delete product"""
-        self.display_goods()
-        goods_id = input("Enter product ID to delete: ").strip()
-        
-        if goods_id in self.inventory:
-            goods_name = self.inventory[goods_id].name
-            confirm = input(f"Are you sure you want to delete {goods_name}? (y/n): ").strip().lower()
-            if confirm == 'y':
-                del self.inventory[goods_id]
-                self.save_goods()
-                print(f"Product {goods_name} deleted")
-        else:
-            print(f"Error: Product ID {goods_id} does not exist")
-    
-    def modify_goods(self) -> None:
-        """Modify product information"""
-        self.display_goods()
-        goods_id = input("Enter product ID to modify: ").strip()
-        
-        if goods_id not in self.inventory:
-            print(f"Error: Product ID {goods_id} does not exist")
-            return
-        
-        goods = self.inventory[goods_id]
-        print(f"\nCurrent product info: ID={goods.id}, Name={goods.name}, Price=${goods.price:.2f}")
-        print("Enter new information (press Enter to keep current value):")
-        
-        # Note: Goods class uses private attributes with property decorators
-        # We need to recreate the object to modify it
-        name = input(f"Product name [{goods.name}]: ").strip()
-        if not name:
-            name = goods.name
-        
-        price = goods.price
-        try:
-            price_str = input(f"Product price [{goods.price}]: ").strip()
-            if price_str:
-                price = float(price_str)
-                if price <= 0:
-                    print("Error: Price must be greater than 0")
-                    price = goods.price
-        except ValueError:
-            print("Error: Please enter a valid number")
-        
-        # Create new Goods object with updated values
-        self.inventory[goods_id] = Goods(goods_id, name, price)
-        self.save_goods()
-        print("Product information updated")
-    
-    def run(self) -> None:
-        """Run main program"""
-        print("\n" + "="*50)
-        print("Welcome to OOP Supermarket Checkout System")
-        print("="*50)
-        
+                print("Invalid choice.")
+
+    def run(self):
+        self.setup()
         while True:
-            print("\nMain Menu:")
-            print("1. Browse products")
-            print("2. Add to cart")
-            print("3. View cart")
-            print("4. Modify cart")
-            print("5. Clear cart")
-            print("6. View discount info")
-            print("7. Checkout")
-            print("8. Product management")
-            print("9. Save and exit")
-            
-            choice = input("\nSelect operation (1-9): ").strip()
-            
-            if choice == '1':
-                self.display_goods()
-            elif choice == '2':
-                self.add_to_cart()
-            elif choice == '3':
-                self.view_cart()
-            elif choice == '4':
-                print("\nModify Cart:")
-                print("1. Remove item")
-                print("2. Update quantity")
-                sub_choice = input("Choose (1-2): ").strip()
-                if sub_choice == '1':
-                    self.remove_from_cart()
-                elif sub_choice == '2':
-                    self.update_cart_item()
+            self.show_main_menu()
+            c = input("Choose (1-8): ").strip()
+
+            if c == "1":
+                self.show_goods()
+                if input("Add product to cart? (y/n): ").strip().lower() != "y":
+                    continue
+                gid = input("Product ID: ").strip()
+                if gid not in self.inventory:
+                    print("ID not found.")
+                    continue
+                qty = self.input_positive_int("Quantity (integer): ")
+                if qty is None:
+                    print("Invalid quantity. Please enter a positive integer.")
+                    continue
+                self.cart.add_item(self.inventory[gid], qty)
+            elif c == "2":
+                self.cart.display_cart()
+            elif c == "3":
+                if self.cart.is_empty():
+                    print("Cart is empty.")
+                    continue
+                self.cart.display_cart()
+                self.show_cart_edit_menu()
+                sub = input("Choose (1-2): ").strip()
+                gid = input("Product ID: ").strip()
+                if sub == "1":
+                    self.cart.remove_item(gid)
+                elif sub == "2":
+                    qty = self.input_positive_int("New quantity (integer): ")
+                    if qty is not None:
+                        self.cart.update_quantity(gid, qty)
+                    else:
+                        print("Invalid quantity. Please enter a positive integer.")
                 else:
-                    print("Invalid choice")
-            elif choice == '5':
-                self.clear_cart()
-            elif choice == '6':
-                self.view_discount_info()
-            elif choice == '7':
-                self.checkout()
-            elif choice == '8':
+                    print("Invalid choice.")
+            elif c == "4":
+                if input("Clear cart? (y/n): ").strip().lower() == "y":
+                    self.cart.clear()
+            elif c == "5":
+                print("Discounts: >=300 -50, >=500 -100, >=1000 -300")
+            elif c == "6":
+                if self.cart.is_empty():
+                    print("Cart is empty.")
+                    continue
+                self.cart.print_receipt()
+                if input("Confirm purchase? (y/n): ").strip().lower() == "y":
+                    print("Payment successful.")
+                    self.cart.clear()
+            elif c == "7":
                 self.manage_goods()
-            elif choice == '9':
+            elif c == "8":
                 self.save_goods()
-                print("Thank you for using the system. Goodbye!")
+                print("Goodbye.")
                 break
             else:
-                print("Invalid choice, please try again")
+                print("Invalid choice.")
 
 
 if __name__ == "__main__":
-    system = SupermarketSystem()
-    system.run()
-
-if __name__ == "__main__":
-    system = SupermarketSystem()
-    system.run()
+    SupermarketSystem().run()
