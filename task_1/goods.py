@@ -19,30 +19,21 @@ class Goods:
         return self.__price
     #product price
 
+    def get_default_goods():
+    return [
+        Goods("001", "Apple", 6.5),
+        Goods("002", "Milk", 12.0),
+        Goods("003", "Chocolate", 8.0),
+        Goods("004", "Biscuit", 7.5),
+        Goods("005", "Bread", 10.0),
+    ]
+
 if __name__=="__main__":
-    apple=Goods("001","Apple",7.5)
-    milk=Goods("002","Milk",17.0)
-    chocolate=Goods("003","Chocolate",20.0)
-    biscuit=Goods("004","Biscuit",30.0)
-    bread=Goods("005","Bread",15.5)
-    instant_noodles=Goods("006","Instant noodles",25.5)
-    soda=Goods("007","Soda",13.0)
-    jelly=Goods("008","Jelly",10.0)
-    potato_chips=Goods("009","Potato chips",18.0)
-    rice_ball=Goods("010","Rice ball",10.0)
-    sandwich=Goods("011","Sandwich",18.0)
-    candy=Goods("012","Candy",15.0)
+    apple, milk, chocolate, biscuit, bread = get_default_goods()
 
     print(apple)
     print(milk)
     print(chocolate)
     print(biscuit)
     print(bread)
-    print(instant_noodles)
-    print(soda)
-    print(jelly)
-    print(potato_chips)
-    print(rice_ball)
-    print(sandwich)
-    print(candy)
 
