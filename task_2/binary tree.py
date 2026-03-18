@@ -12,7 +12,7 @@ class BinaryTree:
             self.root=None
     
     def is_empty(self):
-        return None
+        return True
     
     def height(self, node=None):
         if node==None:
