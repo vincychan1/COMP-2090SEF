@@ -1,6 +1,3 @@
-#import _______ 
-#import _______
-
 class Cashier:
     #product=shop's products,choice=users' product
     def __init__(self,product,choice): 
