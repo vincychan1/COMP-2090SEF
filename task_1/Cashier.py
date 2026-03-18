@@ -8,7 +8,7 @@ class Cashier:
         self.choice=choice
         
     #calculate the total price
-    #discount: 1.⁠ ⁠滿300-50, 2.⁠ ⁠⁠滿500-100, 3.⁠ ⁠⁠滿1000-300
+    #discount: 1.⁠ ⁠滿100-20 2.滿300-50, 3.⁠ ⁠⁠滿500-100, 4.⁠ ⁠⁠滿1000-300
     def sum(self):
         user_volume=len(self.choice)
         i=0
