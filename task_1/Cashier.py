@@ -9,6 +9,7 @@ class Cashier:
     def sum(self):
         user_volume=len(self.choice)
         i=0
+        total_price=0
         while i<user_volume:
             product_name=self.choice[i][0]
             product_quantity=self.choice[i][1]
