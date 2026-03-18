@@ -1,19 +1,32 @@
-class Node:
-    def __init__(self, data):
-        self.left = None
-        self.right = None
-        self.data = data
+class Node: 
+    def __init__(self, value):
+        self.value=value
+        self.left=None
+        self.right=None
 
-firstNode = Node("C")
-secondNode = Node("O")
-thirdNode = Node("A")
-fourthNode = Node("M")
-fifthNode=Node("P")
-sixthNode=Node("N")
-
-
-firstNode.left=secondNode
-firstNode.right=thirdNode
-secondNode.left=fourthNode
-secondNode.right=fifthNode
-thirdNode.left=sixthNode
+class BinaryTree:
+    def __init__(self, root_value=None):
+        if root_value!=None:
+            self.root=Node(root_value)
+        else:
+            self.root=None
+    
+    def is_empty(self):
+        return None
+    
+    def height(self, node=None):
+        if node==None:
+            node = self.root 
+        if node==None:
+            return 0  
+        left_height=self.height(node.left)
+        right_height=self.height(node.right)
+        
+        return max(left_height, right_height) + 1
+    
+    def size(self, node=None):
+        if node is None:
+            node = self.root
+        if node is None:
+            return 0
+        return 1 + self.size(node.left) + self.size(node.right)
