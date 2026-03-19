@@ -57,13 +57,15 @@ class ShoppingCart:
         if not apply_discount:
             return total
 
-        if total >= 1000:
-            return total - 300
-        if total >= 500:
-            return total - 100
-        if total >= 300:
-            return total - 50
-        return total
+        product = {}
+        choice = []
+        for goods_id in self.items:
+            goods = self.items[goods_id][0]
+            qty = self.items[goods_id][1]
+            product[goods.name] = goods.price
+            choice.append((goods.name, qty))
+
+        return Cashier(product, choice).sum()
 
     def display_cart(self) -> None:
         if self.is_empty():
@@ -79,18 +81,3 @@ class ShoppingCart:
             print(f"{goods.id} {goods.name} x {qty} = ${subtotal:.2f}")
         print("-" * 45)
         print(f"Total (after discount): ${self.get_total(True):.2f}")
-
-    def print_receipt(self) -> None:
-        if self.is_empty():
-            print("Cart is empty, cannot checkout.")
-            return
-
-        product = {}
-        choice = []
-        for goods_id in self.items:
-            goods = self.items[goods_id][0]
-            qty = self.items[goods_id][1]
-            product[goods.name] = goods.price
-            choice.append((goods.name, qty))
-
-        Cashier(product, choice).ticket()
