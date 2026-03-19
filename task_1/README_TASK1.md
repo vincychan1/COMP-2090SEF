@@ -10,12 +10,3 @@ An object-oriented supermarket checkout simulation system implemented in Python,
 - **Receipt Generation**: Generate detailed receipts after checkout, save as JSON or text files
 - **Data Persistence**: All product data automatically saved, supports loading after program restart
 
-## Installation and Running
-
-### Requirements
-- Python 3.6 or higher
-
-### How to Run
-1. Enter the project directory:
-   ```bash
-   cd Task1_OOP_Supermarket
