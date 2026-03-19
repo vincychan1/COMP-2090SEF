@@ -80,15 +80,23 @@ class SupermarketSystem:
 
     def manage_single_product(self):
         self.show_goods()
-        gid = input("Product ID: ").strip()
-        if not gid:
-            print("Invalid ID.")
-            return
+        modify = input("Do you want to modify this product? (y/n): ").strip().lower()
+        if modify != "y":
+                print("Cancelled.")
+                return
+        elif modify == "y":
+            gid = input("Product ID: ").strip()
+            if not gid:
+                print("Invalid ID.")
+                return
 
-        if gid in self.inventory:
-            old = self.inventory[gid]
-            print(f"Found: {old.id} | {old.name} | ${old.price:.2f}")
-            action = input("Choose action: [E]dit / [D]elete / [C]ancel: ").strip().lower()
+            if gid in self.inventory:
+                old = self.inventory[gid]
+                print(f"Found: {old.id} | {old.name} | ${old.price:.2f}")
+            
+            
+            
+                action = input("Choose action: [E]dit / [D]elete / [C]ancel: ").strip().lower()
 
             if action == "d":
                 del self.inventory[gid]
