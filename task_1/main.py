@@ -1,6 +1,7 @@
 import json
 from goods import Goods, get_default_goods
 from cart import ShoppingCart
+from Cashier import Cashier
 
 
 class SupermarketSystem:
@@ -77,6 +78,17 @@ class SupermarketSystem:
         print(" 1. Manage Product")
         print(" 2. Back to Main Menu")
         print("=" * 45)
+
+    def print_checkout_receipt(self):
+        product = {}
+        choice = []
+        for goods_id in self.cart.items:
+            goods = self.cart.items[goods_id][0]
+            qty = self.cart.items[goods_id][1]
+            product[goods.name] = goods.price
+            choice.append((goods.name, qty))
+
+        Cashier(product, choice).ticket()
 
     def manage_single_product(self):
         self.show_goods()
@@ -203,7 +215,7 @@ class SupermarketSystem:
                 if self.cart.is_empty():
                     print("Cart is empty.")
                     continue
-                self.cart.print_receipt()
+                self.print_checkout_receipt()
                 if input("Confirm purchase? (y/n): ").strip().lower() == "y":
                     print("Payment successful.")
                     self.cart.clear()
