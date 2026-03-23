@@ -36,7 +36,3 @@ if __name__=="__main__":
     print(chocolate)
     print(biscuit)
     print(bread)
-
-    print(biscuit)
-    print(bread)
-
