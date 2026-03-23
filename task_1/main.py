@@ -1,5 +1,5 @@
 import json
-from goods import Goods, get_default_goods
+from goods import Goods
 from cart import ShoppingCart
 from Cashier import Cashier
 
@@ -27,7 +27,7 @@ class SupermarketSystem:
             pass
 
         if len(self.inventory) == 0:
-            for g in get_default_goods():
+            for g in Goods.get_default_goods():
                 self.inventory[g.id] = g
 
     def save_goods(self):
