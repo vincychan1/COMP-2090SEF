@@ -20,12 +20,12 @@ class Goods:
     #product price
 
     def get_default_goods():
-    return [
-        Goods("001", "Apple", 6.5),
-        Goods("002", "Milk", 12.0),
-        Goods("003", "Chocolate", 8.0),
-        Goods("004", "Biscuit", 7.5),
-        Goods("005", "Bread", 10.0),
+        return [
+            Goods("001", "Apple", 6.5),
+            Goods("002", "Milk", 12.0),
+            Goods("003", "Chocolate", 8.0),
+            Goods("004", "Biscuit", 7.5),
+            Goods("005", "Bread", 10.0),
     ]
 
 if __name__=="__main__":
