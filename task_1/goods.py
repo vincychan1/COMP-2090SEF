@@ -29,11 +29,14 @@ class Goods:
     ]
 
 if __name__=="__main__":
-    apple, milk, chocolate, biscuit, bread = get_default_goods()
+    apple, milk, chocolate, biscuit, bread = Goods.get_default_goods()
 
     print(apple)
     print(milk)
     print(chocolate)
+    print(biscuit)
+    print(bread)
+
     print(biscuit)
     print(bread)
 
