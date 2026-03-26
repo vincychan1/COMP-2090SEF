@@ -32,3 +32,13 @@ class BinaryTree:
     def size(self):
         if self.root is None:
             return 0
+        return self._size(self.root)
+    
+tree = BinaryTree(1)
+tree.root.left = Node(2)
+tree.root.right = Node(3)
+tree.root.left.left = Node(4)
+
+print(f"Is tree empty? {tree.is_empty()}")
+print(f"Tree height: {tree.height()}")
+print(f"Tree size: {tree.size()}")
