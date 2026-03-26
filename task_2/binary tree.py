@@ -6,27 +6,29 @@ class Node:
 
 class BinaryTree:
     def __init__(self, root_value=None):
-        if root_value!=None:
+        if root_value is not None:
             self.root=Node(root_value)
         else:
             self.root=None
     
     def is_empty(self):
-        return self.root==None
+        return self.root is None
     
-    def height(self, node=None):
-        if node==None:
-            node = self.root 
-        if node==None:
-            return 0  
-        left_height=self.height(node.left)
-        right_height=self.height(node.right)
-        
-        return max(left_height, right_height) + 1
-    
-    def size(self, node=None):
-        if node is None:
-            node = self.root
+    def _height(self, node):
         if node is None:
             return 0
-        return 1 + self.size(node.left) + self.size(node.right)
+        return 1 + max(self._height(node.left), self._height(node.right))
+    
+    def height(self): 
+        if self.root is None:
+            return 0
+        return self._height(self.root)
+    
+    def _size(self, node):
+        if node is None:
+            return 0
+        return 1 + self._size(node.left) + self._size(node.right)
+    
+    def size(self):
+        if self.root is None:
+            return 0
