@@ -17,8 +17,12 @@ class Goods:
     @property
     def price(self):
         return self.__price
+    
     #product price
+    def to_dict(self):
+        return {"id": self.__id, "name": self.__name, "price": self.__price}
 
+    @staticmethod
     def get_default_goods():
         return [
             Goods("001", "Apple", 6.5),
@@ -26,7 +30,7 @@ class Goods:
             Goods("003", "Chocolate", 8.0),
             Goods("004", "Biscuit", 7.5),
             Goods("005", "Bread", 10.0),
-    ]
+        ]
 
 if __name__=="__main__":
     apple, milk, chocolate, biscuit, bread = Goods.get_default_goods()
