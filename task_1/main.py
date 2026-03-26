@@ -92,23 +92,16 @@ class SupermarketSystem:
 
     def manage_single_product(self):
         self.show_goods()
-        modify = input("Do you want to modify this product? (y/n): ").strip().lower()
-        if modify != "y":
-                print("Cancelled.")
-                return
-        elif modify == "y":
-            gid = input("Product ID: ").strip()
-            if not gid:
-                print("Invalid ID.")
-                return
+        gid = input("Product ID: ").strip()
+        if not gid:
+            print("Invalid ID.")
+            return
 
-            if gid in self.inventory:
-                old = self.inventory[gid]
-                print(f"Found: {old.id} | {old.name} | ${old.price:.2f}")
-            
-            
-            
-                action = input("Choose action: [E]dit / [D]elete / [C]ancel: ").strip().lower()
+        if gid in self.inventory:
+            # 编辑现有物品
+            old = self.inventory[gid]
+            print(f"\nFound: {old.id} | {old.name} | ${old.price:.2f}")
+            action = input("Choose action: [E]dit / [D]elete / [C]ancel: ").strip().lower()
 
             if action == "d":
                 del self.inventory[gid]
@@ -131,6 +124,7 @@ class SupermarketSystem:
             else:
                 print("Cancelled.")
         else:
+            
             print("Product not found.")
             if input("Add as new product? (y/n): ").strip().lower() != "y":
                 return
@@ -210,7 +204,7 @@ class SupermarketSystem:
                 if input("Clear cart? (y/n): ").strip().lower() == "y":
                     self.cart.clear()
             elif c == "5":
-                print("Discounts: >=300 -50, >=500 -100, >=1000 -300")
+                print("Discounts: >=100 -20, >=300 -50, >=500 -100, >=1000 -300")
             elif c == "6":
                 if self.cart.is_empty():
                     print("Cart is empty.")
