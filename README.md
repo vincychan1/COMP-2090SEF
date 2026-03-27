@@ -1,6 +1,6 @@
 # COMP-2090SEF
 
-WE use two files to separate the code of task 1 and task 2
+We use two files to separate the code of task 1 and task 2
 
 # Task 1 
   We use Python to build an object-oriented supermarket checkout simulation
