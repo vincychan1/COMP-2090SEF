@@ -7,6 +7,8 @@
 An object-oriented supermarket checkout simulation built with Python.  
 This project supports product management, shopping cart operations, tiered discount checkout, console receipt printing, and JSON-based data persistence.
 
+video link: https://youtu.be/PFG80dZuZj0 
+
 ---
 
 ## Table of Contents
