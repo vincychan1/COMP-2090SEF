@@ -2,6 +2,8 @@
 
 A collection of Python implementations for data structures and algorithms coursework, featuring binary tree and heap sort.
 
+video link: https://youtu.be/0KdcwHQn_uo 
+
 ## 📋 Overview
 
 This repository contains implementations of fundamental computer science concepts including:
